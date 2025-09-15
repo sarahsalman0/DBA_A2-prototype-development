@@ -61,6 +61,9 @@ contract votingApp {
    event SessionInitialised(address indexed admin, uint256 candidates, uint256 voters);
 
 
+    function createRound(string calldata topic, string[] calldata options) external onlyAdmin {
+
+    }
 
     function initialiseElection(address[] calldata _customTopic, address[] calldata _voters) external notInitialised {
         admin = msg.sender;
@@ -71,27 +74,14 @@ contract votingApp {
         emit SessionInitialised(admin, customTopic.length, voters.length);
     }
 
-    function getCustomTopic(){
-
-    }
 
     function getVoters(){
 
     }
 
-    function getTopic() external view returns (string memory){
-        return topic;
-    }
-
-    function getTopicOptions() external view returns (address[] memory) {
-        address[] memory out = new address[](customTopic.length);
-        for (uint256 i = 0; i < customTopic.length; i++) {
-            out[i] = customTopic[i];
-        }
-        return out;
-    }
-
-    function getElectionStatus() external view returns () {
+    // 3. Casting Votes // 
+    
+    function Vote() {
 
     }
 
@@ -109,12 +99,47 @@ contract votingApp {
        return votes[msg.sender]; //if user has voted, return vote
    }
 
+    // 4. Voter Eligibility //
 
+    function excludeVoter() {
+
+    }
+
+    funtion reinstateVoter() {
+
+    }
+
+    function viewVoteList() {
+
+    }
+
+
+    // 5. Ending a Voting Round //
 
      // Ends the election (admin only)
     function endingElection() external adminAccess openedElection {
         electionClosed = true;
         electionOpened = false;
+    }
+
+    // 6. Revealing Results //
+
+    // 7. Other Functionality //
+
+    function getTopic() external view returns (string memory){
+        return topic;
+    }
+
+    function getTopicOptions() external view returns (address[] memory) {
+        address[] memory out = new address[](customTopic.length);
+        for (uint256 i = 0; i < customTopic.length; i++) {
+            out[i] = customTopic[i];
+        }
+        return out;
+    }
+
+    function getElectionStatus() external view returns () {
+
     }
 
     // Read the caller’s balance
