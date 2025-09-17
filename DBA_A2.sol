@@ -22,6 +22,7 @@ contract votingApp {
     string public topic;
     address[] private customTopic;
     address[] public voters;
+    Proposal
 
     mapping(address => bool) private isCustomTopic;
     mapping(address => bool) public isVoter;
@@ -58,7 +59,16 @@ contract votingApp {
         _;
     }
 
-   event SessionInitialised(address indexed admin, uint256 candidates, uint256 voters);
+    //Events
+    event ProposalInitialized(uint256 indexed roundId, address indexed admin, string topic, address[] options);
+    event ProposalUpdated(uint256 indexed roundId, string topic, address[] options);
+    event ProposalReset(uint256 indexed oldRoundId, uint256 indexed newRoundId);
+    event PhaseChanged(uint256 indexed roundId, uint8 phase // cast from enum Phase { Idle, Setup, Voting, Reveal });
+    event EligibilityUpdated(uint256 indexed roundId,address indexed participant, bool isExcluded);
+    event VotingStarted(uint256 indexed roundId);
+    event VotingEnded(uint256 indexed roundId);
+    event VoteCast(uint256 indexed roundId, address indexed voter, address indexed option // candidate address);
+    event ResultsRevealed(uint256 indexed roundId, address[] winners, uint256[] counts);
 
 
     function createRound(string calldata topic, string[] calldata options) external onlyAdmin {
@@ -80,7 +90,7 @@ contract votingApp {
     }
 
     // 3. Casting Votes // 
-    
+
     function Vote() {
 
     }
@@ -127,6 +137,8 @@ contract votingApp {
     // 7. Other Functionality //
 
     function getTopic() external view returns (string memory){
+
+        Prop
         return topic;
     }
 
