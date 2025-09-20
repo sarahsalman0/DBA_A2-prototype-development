@@ -5,27 +5,33 @@ contract votingApp {
 //Task 1: Starting a New Voting Session
     //Admin of the voting system
     address public admin;
-    //The session has been initialised
+     //The session has been initialised
     bool public sessionInitialised;
      // Election status when voting is open for voters
     bool public electionOpened;
     // Election status when voting has closed for voters
     bool public electionClosed;
 
-    // Struct to store candidate information and vote count
-    struct CustomTopic{
-        address CustomAddress;
-        uint voteCount;
+    //Phase for the voting platform
+    uint256 public roundId; 
+    enum Phase { Idle, Setup, Voting, Reveal }
+    Phase public phase;
+
+    //Structure
+    struct Option { string label; uint256 count; }
+    struct Round {
+        string topic;
+        Option[] options;
+
+        mapping(address => bool) hasVoted;
+        mapping(address => uint256) voteOf;
+        mapping(address => bool) excluded;
+
+        address[] excludedList;
+        bool resultsRevealed;
     }
 
-
-    string public topic;
-    address[] private customTopic;
-    address[] public voters;
-    Proposal
-
-    mapping(address => bool) private isCustomTopic;
-    mapping(address => bool) public isVoter;
+    mapping(uint256 => Round) private rounds;
     
     //Errors
     error AlreadyInitialised();
@@ -59,18 +65,49 @@ contract votingApp {
         _;
     }
 
+    modifier inPhase(Phase p) { 
+        require(phase == p, "WrongPhase");
+        _; 
+    }
+
+    modifier validOption(uint256 i) { 
+        require(i < rounds[roundId].options.length, "InvalidOption"); 
+        _; 
+    }
+
+    //Constructor
+    constructor() {
+        admin = msg.sender;
+        phase = Phase.Idle;
+        sessionInitialised = false;
+        electionOpened = false;
+        electionClosed = false;
+    }
+
+
     //Events
-    event ProposalInitialized(uint256 indexed roundId, address indexed admin, string topic, address[] options);
-    event ProposalUpdated(uint256 indexed roundId, string topic, address[] options);
+    event ProposalInitialized(uint256 indexed roundId, address indexed admin, string topic, string[] options);
+    event ProposalUpdated(uint256 indexed roundId, string topic, string[] options);
     event ProposalReset(uint256 indexed oldRoundId, uint256 indexed newRoundId);
-    event PhaseChanged(uint256 indexed roundId, uint8 phase // cast from enum Phase { Idle, Setup, Voting, Reveal });
-    event EligibilityUpdated(uint256 indexed roundId,address indexed participant, bool isExcluded);
+    event PhaseChanged(uint256 indexed roundId, uint8 phase); // uint8(Phase)
     event VotingStarted(uint256 indexed roundId);
     event VotingEnded(uint256 indexed roundId);
-    event VoteCast(uint256 indexed roundId, address indexed voter, address indexed option // candidate address);
-    event ResultsRevealed(uint256 indexed roundId, address[] winners, uint256[] counts);
+    event EligibilityUpdated(uint256 indexed roundId, address indexed participant, bool isExcluded);
+    event VoteCast(uint256 indexed roundId, address indexed voter, uint256 indexed optionIndex);
+    event ResultsRevealed(uint256 indexed roundId, uint256[] winners, uint256[] counts);
 
-
+    //Functions
+    function _setPhase(Phase newPhase) internal {
+        phase = newPhase;
+        if (newPhase == Phase.Voting) {
+            electionOpened = true;  electionClosed = false;
+        } else if (newPhase == Phase.Reveal) {
+            electionOpened = false; electionClosed = true;
+        } else {
+            electionOpened = false; electionClosed = false; // Idle or Setup
+        }
+        emit PhaseChanged(roundId, uint8(newPhase));
+    }
     function createRound(string calldata topic, string[] calldata options) external onlyAdmin {
 
     }
@@ -81,7 +118,9 @@ contract votingApp {
 
 
         sessionInitialised = true;
-        emit SessionInitialised(admin, customTopic.length, voters.length);
+        emit ProposalInitialized(roundId, admin, topic, options);
+        emit PhaseChanged(roundId, uint8(Phase.Voting));
+        emit VotingStarted(roundId);
     }
 
 

@@ -87,14 +87,14 @@ async function getBalanceOf() {
   if (elBal) elBal.innerText = balance;
   }
 
-  async function get_number_of_propsal() {
+async function get_number_of_propsal() {
     
-  }
+}
 
-  async function if_reviewer() {
+async function if_reviewer() {
 
-  }
+}
 
-  async function move_to_next_phase() {
+async function move_to_next_phase() {
     
-  }
+}
