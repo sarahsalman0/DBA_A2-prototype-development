@@ -232,7 +232,7 @@ contract votingApp {
    }
 
     // Admin is able to check whether a specific voter has voted 
-   function admindViewVoterStatus(address user) external view onlyAdmin returns (bool voted) {
+   function adminViewVoterStatus(address user) external view onlyAdmin returns (bool voted) {
         voted = rounds[roundId].hasVoted[user];
     }
 
@@ -274,7 +274,7 @@ contract votingApp {
         for (uint i = 0; i < r.excludedList.length; i++) list[i] = r.excludedList[i];
     }
 
-    // Amind is able to see a list of who has voted or excluded in one list
+    // Admin is able to see a list of who has voted or excluded in one list
     function viewVoteList() public view onlyAdmin returns (address[] memory voters, bool[] memory voted, bool[] memory isExcludedNow) {
         Round storage r = rounds[roundId];
         uint256 n = r.voters.length;
