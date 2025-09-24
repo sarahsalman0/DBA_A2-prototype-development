@@ -13,19 +13,21 @@ async function connectWallet() {
   console.log("Connected:", userAddress);
   } else {
   alert("Please install MetaMask!");
+  return null;
   }
   const el = document.getElementById("address");
   if (el) el.innerText = userAddress || '—';
+
+  return userAddress;
 }
 
 
 async function getMyBalance() {
   if (!contract || !userAddress) return alert("Connect wallet first");
-  const myBal = await contract.methods.getMyBalance().call({
-  from: userAddress
-  });
+  const myBal = await contract.methods.getMyBalance().call({ from: userAddress });
   const el = document.getElementById("balance");
   if (el) el.innerText = myBal;
+  return myBal;
 }
   
   
@@ -39,10 +41,8 @@ async function getBalanceOf() {
   return;
   }
 
-  
   // Call the smart contract function with the address
   const balance = await contract.methods.getBalance(inputAddress).call();
-  
   
   const elAddr = document.getElementById("inputAddress");
   if (elAddr) elAddr.innerText = inputAddress;
@@ -50,6 +50,7 @@ async function getBalanceOf() {
   if (elBal) elBal.innerText = balance;
   }
 
+  
   async function get_current_network(){
     // get current eth network
     const eth_network = await window.ethereum.request({
@@ -208,4 +209,5 @@ async function resetSession(topic, options) {
       return null;
     }
 }
+
 
