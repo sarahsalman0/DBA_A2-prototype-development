@@ -5,6 +5,8 @@ const contract_abi = [{"inputs":[],"stateMutability":"nonpayable","type":"constr
 let userAddress = null;
 const contract = new web3.eth.Contract(contract_abi, contract_address);
 
+//display
+
 async function connectWallet() {
   if (window.ethereum) {
   await window.ethereum.request({ method: "eth_requestAccounts" });
@@ -50,7 +52,7 @@ async function getBalanceOf() {
   if (elBal) elBal.innerText = balance;
   }
 
-  
+
   async function get_current_network(){
     // get current eth network
     const eth_network = await window.ethereum.request({
@@ -109,6 +111,80 @@ async function getCurrentPhase() {
   }
 }
 
+
+async function getOptions() {
+  try {
+    return await contract.methods.getOptions().call();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function getTopic() {
+  try {
+    return await contract.methods.getTopic().call();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function getResults() {
+  try {
+    return await contract.methods.getResults().call();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function getElectionStatus(id, phase, initialised, electionOpened, electionClosed) {
+  try {
+    return await contract.methods.getElectionStatus().call();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function hasVoted(addr) {
+  try {
+    return await contract.methods.hasVoted(addr).call();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function viewMyVote() {
+  try {
+    return await contract.methods.viewMyVote().call({ from: userAddress });
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function getVoters() {
+  try {
+    return await contract.methods.getVoters().call();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function getExcluded() {
+  try {
+    return await contract.methods.getExcluded().call();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+/*
 async function get_number_of_propsal() {
   try {
     return await contract.methods.getOptions().call(); //double check this one 
@@ -129,18 +205,19 @@ async function if_reviewer(userAddress) {
     console.log(error);
     return null;
   }
-}
+}*/
 
-//wrapper functions for changing phases, controlled by admin
 
-// Initialise a session
+//admin actions
+
 async function initialiseSession(topic, options) {
 
   try {
-  var from_address = await connectWallet();
+  const from_address = await connectWallet();
   await contract.methods.initialisedSession(topic, options).call({ from: from_address });
-  var receipt = await contract.methods.initialisedSession(topic, options).send({from: from_address});
+  const receipt = await contract.methods.initialisedSession(topic, options).send({from: from_address});
   console.log(receipt);
+  return receipt;
   }
   catch (error) {
     connectError.innerHTML = error.message;
@@ -149,14 +226,15 @@ async function initialiseSession(topic, options) {
   }
 }
 
-// Start voting
+
 async function startVoting() {
 
   try {
-    var from_address = await connectWallet();
+    const from_address = await connectWallet();
     await contract.methods.startVoting().call({ from: from_address });
-    var receipt = await contract.methods.startVoting().send({from: from_address});
-    console.log(receipt);
+    const receipt = await contract.methods.startVoting().send({from: from_address});
+    console.log("Voting started:",receipt);
+    return receipt;
     }
     catch (error) {
       connectError.innerHTML = error.message;
@@ -165,13 +243,15 @@ async function startVoting() {
     }
 }
 
-// End voting
+
 async function endVoting() {
+
   try {
-    var from_address = await connectWallet();
+    const from_address = await connectWallet();
     await contract.methods.endingElection().call({ from: from_address });
-    var receipt = await contract.methods.endingElection().send({from: from_address});
-    console.log(receipt);
+    const receipt = await contract.methods.endingElection().send({from: from_address});
+    console.log("Voting ended:", receipt);
+    return receipt;
     }
     catch (error) {
       connectError.innerHTML = error.message;
@@ -180,13 +260,14 @@ async function endVoting() {
     }
 }
 
-// Reveal results
+
 async function revealResults() {
   try {
-    var from_address = await connectWallet();
+    const from_address = await connectWallet();
     await contract.methods.revealResults().call({ from: from_address });
-    var receipt = await contract.methods.revealResults().send({from: from_address});
-    console.log(receipt);
+    const receipt = await contract.methods.revealResults().send({from: from_address});
+    console.log("Results:",receipt);
+    return receipt;
     }
     catch (error) {
       connectError.innerHTML = error.message;
@@ -195,13 +276,14 @@ async function revealResults() {
     }
 }
 
-// Reset for a new round
+
 async function resetSession(topic, options) {
   try {
-    var from_address = await connectWallet();
+    const from_address = await connectWallet();
     await contract.methods.resetSession().call({ from: from_address });
-    var receipt = await contract.methods.resetSession().send({from: from_address});
-    console.log(receipt);
+    const receipt = await contract.methods.resetSession().send({from: from_address});
+    console.log("Session reset:",receipt);
+    return receipt;
     }
     catch (error) {
       connectError.innerHTML = error.message;
@@ -211,3 +293,47 @@ async function resetSession(topic, options) {
 }
 
 
+async function excludeVoter(addr) {
+  try {
+    const from_address = await connectWallet();
+    await contract.methods.excludeVoter().call({ from: from_address});
+    const receipt = await contract.methods.excludeVoter(addr).send({ from: from_address });
+    console.log("Voter excluded:", receipt);
+    return receipt;
+  } 
+  catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function reinstateVoter(addr) {
+  try {
+    const from_address = await connectWallet();
+    await contract.methods.reinstateVoter().call({ from: from_address});
+    const receipt = await contract.methods.reinstateVoter(addr).send({ from: from_address });
+    console.log("Voter reinstated:", receipt);
+    return receipt;
+  } 
+  catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+
+//voter actions 
+
+async function castVote(option) {
+  try {
+    const from_address = await connectWallet();
+    await contract.methods.castVote().call({ from: from_address});
+    const receipt = await contract.methods.Vote(option).send({ from: from_address });
+    console.log("Vote cast:", receipt);
+    return receipt;
+  }
+   catch (error) {
+    console.error(error);
+    return null;
+  }
+}
