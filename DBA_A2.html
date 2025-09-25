@@ -9,8 +9,13 @@
 </head>
 
 <body>
-    <h1>Voting Platform</h1>
-    <div id="error"></div>
+    <header>
+        <h1>Voting Platform</h1>
+        <div id="error"></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn primary" onclick="voting.connectWallet()">Connect</button>
+        </div>
+    </header>
     <div>Wallet information:<span id="metamask_address"></span></div>
     <div>ETH Balance:<span id="metamask_balance"></span></div>
     <div>Network:<span id="metamask_network"></span></div>
@@ -20,26 +25,61 @@
     <div class="card" id="coordinatorSection" style="display:none;">
         <h2>Coordinator Panel</h2>
         <div class="row">
-          <input id="topicInput" type="text" placeholder="Topic (e.g., Best Programming Language?)" style="flex:1; min-width:280px;" />
+          <input id="topicInput" type="text" placeholder="Topic" style="flex:1; min-width:280px;" />
         </div>
         <div class="row">
           <input id="optionsInput" type="text" placeholder='Comma-separated options (e.g., "Solidity, Rust, Python")' style="flex:1; min-width:280px;" />
         </div>
-        <div class="row">
-          <button id="btnStart">Start Election</button>
-          <button id="btnEnd">End Voting</button>
-          <button id="btnReveal">Reveal Results</button>
-        </div>
         <div class="warning" id="coordinatorWarning"></div>
     </div>
 
+    <h2>Select Voting Phase</h2>
+    <div>
+          <button class="btn" onclick="voting.startVoting()">Start Voting</button>
+          <button class="btn" onclick="voting.endVoting()">End Voting</button>
+          <button class="btn" onclick="voting.revealResults()">Reveal Results</button>
+    </div>
 
 
-
-
-
-    <h2>Voters</h2>
+    <h2>Voting Eligibility</h2>
+    <div class="row-3">
+        <div>
+        <label for="eligibleVote">Address</label>
+        <input id="eligibleVotr" placeholder="0x..." />
+        </div>
+          <button class="btn" onclick="voting.excludeVoter(eligAddr.value)">Exclude</button>
+          <button class="btn" onclick="voting.reinstateVoter(eligAddr.value)">Reinstate</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" onclick="voting.getExcluded().then(lst=>excludedList.textContent=lst.join(', '))">Get Excluded List</button>
+          <div class="value" id="excludedList">—</div>
+        </div>
+        </div>
+    </div>
     
+    <h2>Voting</h2>
+    <div class="row">
+        <div>
+        <label for="voteSelect">Select Option</label>
+        <select id="voteSelect"></select>
+        </div>
+        <button class="btn" onclick="voting.castVote(parseInt(voteSelect.value,10))">Cast Vote</button>
+    </div>
+
+    <div class="row" style="margin-top:8px">
+        <button class="btn" onclick="voting.viewMyVote().then(v=>{myVote.textContent = v.voted ? `${v.optionIndex}: ${v.optionText}` : 'Not voted';})">View My Vote</button>
+        <div class="value" id="myVote">—</div>
+    </div>
+
+
     <h2>Results</h2>
+    <div class="row">
+        <button class="btn" onclick="voting.getResults().then(r=>{resOptions.textContent=r.optionTexts.join(', '); resCounts.textContent=r.counts.join(', ');})">Get Results</button>
+        <div></div>
+    </div>
+    <div class="grid" style="gap:10px;grid-template-columns:repeat(12,1fr);margin-top:6px">
+        <div class="span-6 value">Options: <span id="resOptions" style="margin-left:8px">—</span></div>
+        <div class="span-6 value">Counts: <span id="resCounts" style="margin-left:8px">—</span></div>
+    </div>
 </body>
 </html>
