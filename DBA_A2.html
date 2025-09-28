@@ -6,80 +6,130 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <script src="DBA_A2.js"></script>
     <title>Smart Contract Voting</title>
+    <link rel="stylesheet" href="DBA_A2.css">
 </head>
 
 <body>
     <header>
         <h1>Voting Platform</h1>
-        <div id="error"></div>
-        <div style="display:flex;gap:8px;align-items:center;">
-            <button class="btn primary" onclick="voting.connectWallet()">Connect</button>
-        </div>
+        <p><button class="primary" onclick="voting.connectWallet()">Connect</button></p>
     </header>
-    <div>Wallet information:<span id="metamask_address"></span></div>
-    <div>ETH Balance:<span id="metamask_balance"></span></div>
-    <div>Network:<span id="metamask_network"></span></div>
-    <button onclick="connect_to_metamask()">Connect</button>
 
-    <h2>Coordinator</h2>
-    <div class="card" id="coordinatorSection" style="display:none;">
-        <h2>Coordinator Panel</h2>
-        <div class="row">
-          <input id="topicInput" type="text" placeholder="Topic" style="flex:1; min-width:280px;" />
-        </div>
-        <div class="row">
-          <input id="optionsInput" type="text" placeholder='Comma-separated options (e.g., "Solidity, Rust, Python")' style="flex:1; min-width:280px;" />
-        </div>
-        <div class="warning" id="coordinatorWarning"></div>
-    </div>
+<main>
+    <section aria-labelledby="coordinator">
+        <h2 id="coordinator">Coordinator</h2>
+        <p class="row">
+          <button class="primary" onclick="voting.connectWallet()">Connect Wallet</button>
+          <button onclick="voting.myNetwork?.().then(n=>network.textContent=n?.name||'')">Get Network</button>
+          <button onclick="voting.myBalanceWei?.().then(b=>balance.textContent=b)">Get My Balance</button>
+        </p>
+        <p>My address: <span id="address" class="val">—</span></p>
+        <p>My balance (wei): <span id="balance" class="val">—</span></p>
+        <p>Network: <span id="network" class="val">—</span></p>
+    </section>
 
-    <h2>Select Voting Phase</h2>
-    <div>
-          <button class="btn" onclick="voting.startVoting()">Start Voting</button>
-          <button class="btn" onclick="voting.endVoting()">End Voting</button>
-          <button class="btn" onclick="voting.revealResults()">Reveal Results</button>
-    </div>
+    <section aria-labelledby="status-h">
+        <h2 id="status-h">Status</h2>
+        <p class="row">
+          <button onclick="voting.getStatus().then(s=>{roundId.textContent=s._roundId;phaseName.textContent=s.phaseName;flagSession.textContent=s._sessionInitialised;flagOpen.textContent=s._electionOpened;flagClosed.textContent=s._electionClosed;})">Refresh</button>
+          <button onclick="voting.getTopic().then(x=>statusTopic.textContent=x)">Get Topic</button>
+          <button onclick="voting.getOptions().then(xs=>statusOptions.textContent=xs.join(', '))">Get Options</button>
+        </p>
+        <p>Round: <span id="roundId" class="val">—</span></p>
+        <p>Phase: <span id="phaseName" class="val">—</span></p>
+        <p>Session initialised: <span id="flagSession" class="val">—</span></p>
+        <p>Election opened: <span id="flagOpen" class="val">—</span></p>
+        <p>Election closed: <span id="flagClosed" class="val">—</span></p>
+        <p>Topic: <span id="statusTopic" class="val">—</span></p>
+        <p>Options: <span id="statusOptions" class="val">—</span></p>
+    </section>
 
-
-    <h2>Voting Eligibility</h2>
-    <div class="row-3">
-        <div>
-        <label for="eligibleVote">Address</label>
-        <input id="eligibleVotr" placeholder="0x..." />
-        </div>
-          <button class="btn" onclick="voting.excludeVoter(eligAddr.value)">Exclude</button>
-          <button class="btn" onclick="voting.reinstateVoter(eligAddr.value)">Reinstate</button>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <button class="btn" onclick="voting.getExcluded().then(lst=>excludedList.textContent=lst.join(', '))">Get Excluded List</button>
-          <div class="value" id="excludedList">—</div>
-        </div>
-        </div>
-    </div>
+    <section aria-labelledby="admin-h">
+        <h2 id="admin-h">Corrdinator Section</h2>
     
-    <h2>Voting</h2>
-    <div class="row">
-        <div>
-        <label for="voteSelect">Select Option</label>
-        <select id="voteSelect"></select>
-        </div>
-        <button class="btn" onclick="voting.castVote(parseInt(voteSelect.value,10))">Cast Vote</button>
-    </div>
+        <fieldset>
+          <legend>Topic & Options</legend>
+          <label for="topic">Topic</label>
+          <input id="topic" placeholder="e.g., Choose the mascot" />
+          <label for="optionsCsv">Options</label>
+          <textarea id="optionsCsv" placeholder="Dog, Cat, Koala"></textarea>
+          <p class="row">
+            <button onclick="(async()=>{await voting.initializeSession(topic.value,optionsCsv.value)})()">Initialize Session</button>
+            <button onclick="(async()=>{await voting.setTopicAndOptions(topic.value,optionsCsv.value)})()">Set Topic & Options</button>
+            <button onclick="(async()=>{await voting.resetSession(topic.value,optionsCsv.value)})()">Reset Session</button>
+          </p>
+          <p class="row">
+            <button onclick="voting.getTopic().then(x=>currentTopic.textContent=x)">Get Topic</button>
+            <span id="currentTopic" class="val">—</span>
+          </p>
+          <p class="row">
+            <button onclick="voting.getOptions().then(lst=>{currentOptions.textContent=lst.join(', '); voteSelect.innerHTML=''; lst.forEach((o,i)=>voteSelect.add(new Option(`${i}: ${o}`, i)));})">Get Options</button>
+            <span id="currentOptions" class="val">—</span>
+          </p>
+        </fieldset>
 
-    <div class="row" style="margin-top:8px">
-        <button class="btn" onclick="voting.viewMyVote().then(v=>{myVote.textContent = v.voted ? `${v.optionIndex}: ${v.optionText}` : 'Not voted';})">View My Vote</button>
-        <div class="value" id="myVote">—</div>
-    </div>
+        <fieldset>
+            <legend>Select Voting Phase</legend>
+            <p class="row">
+              <button onclick="voting.startVoting()">Start Voting</button>
+              <button onclick="voting.endVoting()">End Voting</button>
+              <button onclick="voting.revealResults()">Reveal Results</button>
+            </p>
+        </fieldset>
 
+        <fieldset>
+            <legend>Voting Eligibility</legend>
+            <label for="eligAddr">Participant Address</label>
+            <input id="eligAddr" placeholder="0x..." />
+            <p class="row">
+              <button onclick="voting.excludeVoter(eligAddr.value)">Exclude</button>
+              <button onclick="voting.reinstateVoter(eligAddr.value)">Reinstate</button>
+              <button onclick="voting.getExcluded().then(list=>excludedList.textContent=list.join(', '))">Get Excluded List</button>
+            </p>
+            <p>Excluded: <span id="excludedList" class="val">—</span></p>
+          </fieldset>
+    </section>
+    
+    <section aria-labelledby="participant-h">
+        <h2 id="participant-h">Participant Panel</h2>
+    
+        
+        <fieldset>
+          <legend>Voting</legend>
+          <p class="row">
+            <button onclick="voting.getOptions().then(lst=>{voteSelect.innerHTML=''; lst.forEach((o,i)=>voteSelect.add(new Option(`${i}: ${o}`, i)));})">Load Options</button>
+            <select id="voteSelect"></select>
+            <button onclick="voting.castVote(parseInt(voteSelect.value,10))">Cast Vote</button>
+          </p>
+          <p class="row">
+            <button onclick="voting.viewMyVote().then(v=>myVote.textContent=v.voted?`${v.optionIndex}: ${v.optionText}`:'Not voted')">View My Vote</button>
+            <span id="myVote" class="val">—</span>
+          </p>
+        </fieldset>
+   
+    <section aria-labelledby="results-h">
+        <h2 id="results-h">Results</h2>
+          
+        <p id="resultsLockMsg" class="row">
+            Results are hidden until the coordinator reveals them after voting ends.
+        </p>
+          
+        <p class="row">
+            <button id="btnReveal" onclick="revealAndRefresh()">Reveal Results (Admin)</button>
+            <button id="btnGetResults" onclick="fetchAndRenderResults()" disabled>Get Results</button>
+        </p>
+          
+        <p>Winning option(s): <span id="winners" class="val">—</span></p>
+            <table id="resultsTable" style="border-collapse:collapse;display:none">
+            <thead>
+            <tr>
+                <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #ccc;">Option</th>
+                <th style="text-align:right;padding:6px 8px;border-bottom:1px solid #ccc;">Votes</th>
+            </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+            </table>
+    </section>
 
-    <h2>Results</h2>
-    <div class="row">
-        <button class="btn" onclick="voting.getResults().then(r=>{resOptions.textContent=r.optionTexts.join(', '); resCounts.textContent=r.counts.join(', ');})">Get Results</button>
-        <div></div>
-    </div>
-    <div class="grid" style="gap:10px;grid-template-columns:repeat(12,1fr);margin-top:6px">
-        <div class="span-6 value">Options: <span id="resOptions" style="margin-left:8px">—</span></div>
-        <div class="span-6 value">Counts: <span id="resCounts" style="margin-left:8px">—</span></div>
-    </div>
 </body>
 </html>
