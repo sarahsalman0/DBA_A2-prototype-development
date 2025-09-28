@@ -337,3 +337,114 @@ async function castVote(option) {
     return null;
   }
 }
+
+//results action
+window.voting = {
+  connectWallet,
+  initializeSession,
+  resetSession,
+  setTopicAndOptions,
+  startVoting,
+  endVoting,
+  revealResults,
+  castVote,
+  excludeVoter,
+  reinstateVoter,
+  getExcluded,
+  viewMyVote,
+  adminViewVoterStatus,
+  getTopic,
+  getOptions,
+  getStatus,
+  getResults,
+  myWallet,
+  myBalanceWei,
+  myNetwork
+};
+
+// === Results gating ===
+window.uiResultsRevealed = false;
+
+async function refreshResultsUI() {
+  try {
+    const s = await voting.getStatus();
+    const inReveal = s.phaseName === 'Reveal';
+    const inVoting = s.phaseName === 'Voting';
+
+    const lock = document.getElementById('resultsLockMsg');
+    const revealBtn = document.getElementById('btnReveal');
+    const getBtn = document.getElementById('btnGetResults');
+
+    if (!inReveal) {
+      lock.textContent = inVoting
+        ? 'Live voting status is never shown while voting is ongoing.'
+        : 'Results are available only after the coordinator reveals them.';
+      revealBtn.disabled = true;
+      getBtn.disabled = true;
+      document.getElementById('winners').textContent = '—';
+      hideResultsTable();
+      return;
+    }
+
+    lock.textContent = 'Reveal phase: coordinator can reveal, then everyone can view the summary.';
+    getBtn.disabled = !window.uiResultsRevealed;
+    revealBtn.disabled = false;
+  } catch (e) {
+    console.warn('refreshResultsUI failed', e);
+  }
+}
+
+function hideResultsTable() {
+  const tb = document.getElementById('resultsTable');
+  const body = document.getElementById('resultsBody');
+  body.innerHTML = '';
+  tb.style.display = 'none';
+}
+
+async function revealAndRefresh() {
+  try {
+    await voting.revealResults(); // Admin only, enforced on-chain
+    window.uiResultsRevealed = true;
+    await fetchAndRenderResults();
+    await refreshResultsUI();
+  } catch (e) {
+    console.error('Reveal failed:', e);
+  }
+}
+
+async function fetchAndRenderResults() {
+  try {
+    const s = await voting.getStatus();
+    if (s.phaseName !== 'Reveal' || !window.uiResultsRevealed) return;
+
+    const r = await voting.getResults();
+    const options = r.optionTexts || r[0] || [];
+    const counts  = r.counts      || r[1] || [];
+
+    const max = counts.reduce((m,x)=>Math.max(m,Number(x||0)),0);
+    const winners = options
+      .map((label,i)=>({label,i,c:Number(counts[i]||0)}))
+      .filter(o=>o.c===max)
+      .map(o=>`${o.i}: ${o.label}`);
+    document.getElementById('winners').textContent =
+      winners.length ? winners.join(', ') : '—';
+
+    const body = document.getElementById('resultsBody');
+    body.innerHTML = '';
+    options.forEach((label,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML = `<td>${i}: ${label}</td><td style="text-align:right">${counts[i]??0}</td>`;
+      body.appendChild(tr);
+    });
+    document.getElementById('resultsTable').style.display='table';
+  } catch(e){ console.error('Fetching results failed:', e); }
+}
+
+(async () => {
+  await refreshResultsUI();
+  if (window.ethereum) {
+    window.ethereum.on?.('chainChanged', refreshResultsUI);
+    window.ethereum.on?.('accountsChanged', refreshResultsUI);
+  }
+})();
+
