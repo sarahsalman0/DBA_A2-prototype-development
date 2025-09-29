@@ -7,6 +7,7 @@
     <script src="DBA_A2.js"></script>
     <title>Smart Contract Voting</title>
     <link rel="stylesheet" href="DBA_A2.css">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -24,7 +25,7 @@
           <button onclick="voting.myBalanceWei?.().then(b=>balance.textContent=b)">Get My Balance</button>
         </p>
         <p>My address: <span id="address" class="val">—</span></p>
-        <p>My balance (wei): <span id="balance" class="val">—</span></p>
+        <p>My balance: <span id="balance" class="val">—</span></p>
         <p>Network: <span id="network" class="val">—</span></p>
     </section>
 
@@ -50,9 +51,9 @@
         <fieldset>
           <legend>Topic & Options</legend>
           <label for="topic">Topic</label>
-          <input id="topic" placeholder="e.g., Choose the mascot" />
+          <input id="topic" placeholder="e.g, Where to Eat" />
           <label for="optionsCsv">Options</label>
-          <textarea id="optionsCsv" placeholder="Dog, Cat, Koala"></textarea>
+          <textarea id="optionsCsv" placeholder="KFC, Gongcha, Grill'd"></textarea>
           <p class="row">
             <button onclick="(async()=>{await voting.initializeSession(topic.value,optionsCsv.value)})()">Initialize Session</button>
             <button onclick="(async()=>{await voting.setTopicAndOptions(topic.value,optionsCsv.value)})()">Set Topic & Options</button>
@@ -72,8 +73,13 @@
             <legend>Select Voting Phase</legend>
             <p class="row">
               <button onclick="voting.startVoting()">Start Voting</button>
+              <span id="warnStart" class="warn"></span>
+
               <button onclick="voting.endVoting()">End Voting</button>
-              <button onclick="voting.revealResults()">Reveal Results</button>
+              <span id="warnEnd" class="warn"></span>
+
+              <button id="btnReveal" onclick="revealAndRefresh()">Reveal Results (Admin)</button>
+              <span id="warnReveal" class="warn"></span>
             </p>
         </fieldset>
 
@@ -98,12 +104,14 @@
           <legend>Voting</legend>
           <p class="row">
             <button onclick="voting.getOptions().then(lst=>{voteSelect.innerHTML=''; lst.forEach((o,i)=>voteSelect.add(new Option(`${i}: ${o}`, i)));})">Load Options</button>
+            <span id="warnVote" class="warn"></span>
+
             <select id="voteSelect"></select>
             <button onclick="voting.castVote(parseInt(voteSelect.value,10))">Cast Vote</button>
           </p>
           <p class="row">
-            <button onclick="voting.viewMyVote().then(v=>myVote.textContent=v.voted?`${v.optionIndex}: ${v.optionText}`:'Not voted')">View My Vote</button>
-            <span id="myVote" class="val">—</span>
+            <button onclick="voting.viewMyVote().then(v=>{myVote.textContent = v.voted ? `${v.optionIndex}: ${v.optionText}` : 'Not voted'; updateWarnings();})">View My Vote</button>
+            <span id="warnView" class="warn"></span>
           </p>
         </fieldset>
    
@@ -116,13 +124,20 @@
           
         <p class="row">
             <button id="btnReveal" onclick="revealAndRefresh()">Reveal Results (Admin)</button>
-            <button id="btnGetResults" onclick="fetchAndRenderResults()" disabled>Get Results</button>
-        </p>
-          
-        <p>Winning option(s): <span id="winners" class="val">—</span></p>
-            <table id="resultsTable" style="display:none">
-            <tbody id="resultsBody"></tbody>
-            </table>
+            <p id="resultsLockMsg" class="row">Results are hidden until the coordinator reveals them after voting ends.</p>
+            <button id="btnGetResults" onclick="fetchAndRenderResults()">Get Results</button>
+            <span id="warnGetResults" class="warn"></span>
+            
+            <p>Winning option(s): <span id="winners" class="val">—</span></p>
+                <table id="resultsTable" style="border-collapse:collapse;display:none">
+                    <thead>
+                    <tr>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #ccc;">Option</th>
+                    <th style="text-align:right;padding:6px 8px;border-bottom:1px solid #ccc;">Votes</th>
+                    </tr>
+                    </thead>
+                <tbody id="resultsBody"></tbody>
+                </table>
     </section>
 
 </body>

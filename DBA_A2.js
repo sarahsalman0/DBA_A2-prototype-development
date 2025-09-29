@@ -362,89 +362,102 @@ window.voting = {
   myNetwork
 };
 
-// === Results gating ===
-window.uiResultsRevealed = false;
+window.uiResultsRevealed = window.uiResultsRevealed ?? false;
 
-async function refreshResultsUI() {
-  try {
-    const s = await voting.getStatus();
-    const inReveal = s.phaseName === 'Reveal';
-    const inVoting = s.phaseName === 'Voting';
+function setTxt(id, msg){ 
+  const el = document.getElementById(id); 
+  if (el) el.textContent = msg || ""; 
+}
 
-    const lock = document.getElementById('resultsLockMsg');
-    const revealBtn = document.getElementById('btnReveal');
-    const getBtn = document.getElementById('btnGetResults');
+async function getAdminAddress(){
+  try{
+    if (window.voting?.getContractAdmin) return await window.voting.getContractAdmin();
+    if (window.voting?.admin) return await window.voting.admin();
+  }catch{} 
+  return null;
+}
 
-    if (!inReveal) {
-      lock.textContent = inVoting
-        ? 'Live voting status is never shown while voting is ongoing.'
-        : 'Results are available only after the coordinator reveals them.';
-      revealBtn.disabled = true;
-      getBtn.disabled = true;
-      document.getElementById('winners').textContent = '—';
-      hideResultsTable();
-      return;
-    }
+async function getRole(){
+  const me = await window.voting.myWallet();
+  const admin = await getAdminAddress();
+  return { me, admin, isAdmin: !!(me&&admin)&&me.toLowerCase()===admin.toLowerCase() };
+}
 
-    lock.textContent = 'Reveal phase: coordinator can reveal, then everyone can view the summary.';
-    getBtn.disabled = !window.uiResultsRevealed;
-    revealBtn.disabled = false;
-  } catch (e) {
-    console.warn('refreshResultsUI failed', e);
+async function getPhase(){
+  const s = await window.voting.getStatus(); // {_roundId, phaseName, ...}
+  return { s, phase: s.phaseName };
+}
+
+async function getMyVotingStatus(){
+  try{ 
+    const v = await window.voting.viewMyVote(); 
+    return { voted: !!v.voted }; 
   }
+  catch{ return { voted:false }; }
 }
 
-function hideResultsTable() {
-  const tb = document.getElementById('resultsTable');
-  const body = document.getElementById('resultsBody');
-  body.innerHTML = '';
-  tb.style.display = 'none';
+async function updateWarnings(){
+  try{
+    const [{ s, phase }, { isAdmin }, { voted }] = await Promise.all([ getPhase(), getRole(), getMyVotingStatus() ]);
+
+    
+    setTxt("warnStart",  !isAdmin ? "Admin only."  : phase!=="Setup"  ? "Can only start from Setup."  : "");
+    setTxt("warnEnd",    !isAdmin ? "Admin only."  : phase!=="Voting" ? "Can only end during Voting." : "");
+    setTxt("warnReveal", !isAdmin ? "Admin only."  : phase!=="Reveal" ? "Can only reveal in Reveal."  : "");
+
+   
+    setTxt("warnVote", phase!=="Voting" ? "You can vote only during the Voting phase."
+                      : voted ? "You have already voted."
+                      : "");
+    setTxt("warnView", "");
+
+    
+    const lock = document.getElementById("resultsLockMsg");
+    if (lock){
+      lock.textContent = phase==="Voting"
+        ? "Live voting status is never shown while voting is ongoing."
+        : (phase!=="Reveal"
+          ? "Results are available only after the coordinator reveals them in the Reveal phase."
+          : "Reveal phase: coordinator can reveal, then everyone can view the summary.");
+    }
+    setTxt("warnGetResults",
+      phase!=="Reveal" ? "Hidden until Reveal phase."
+      : (!window.uiResultsRevealed ? "Coordinator must reveal before results can be viewed." : "")
+    );
+  }
+  catch(e){ console.warn("updateWarnings failed", e); }
 }
 
-async function revealAndRefresh() {
-  try {
-    await voting.revealResults(); // Admin only, enforced on-chain
+function hideResultsTable(){
+  const tb=document.getElementById('resultsTable'); 
+  const body=document.getElementById('resultsBody');
+  if(body) body.innerHTML=''; 
+  if(tb) tb.style.display='none';
+}
+
+async function revealAndRefresh(){
+  try{
+    await window.voting.revealResults(); 
     window.uiResultsRevealed = true;
     await fetchAndRenderResults();
-    await refreshResultsUI();
-  } catch (e) {
-    console.error('Reveal failed:', e);
-  }
+  }catch(e){ console.error('Reveal failed:', e); }
+  finally{ await updateWarnings(); }
 }
 
-async function fetchAndRenderResults() {
-  try {
-    const s = await voting.getStatus();
-    if (s.phaseName !== 'Reveal' || !window.uiResultsRevealed) return;
-
-    const r = await voting.getResults();
+async function fetchAndRenderResults(){
+  try{
+    const { phase } = await getPhase();
+    if (phase!=="Reveal") return; 
+    const r = await window.voting.getResults();
     const options = r.optionTexts || r[0] || [];
     const counts  = r.counts      || r[1] || [];
 
     const max = counts.reduce((m,x)=>Math.max(m,Number(x||0)),0);
-    const winners = options
-      .map((label,i)=>({label,i,c:Number(counts[i]||0)}))
-      .filter(o=>o.c===max)
-      .map(o=>`${o.i}: ${o.label}`);
-    document.getElementById('winners').textContent =
-      winners.length ? winners.join(', ') : '—';
+    const winners = options.map((label,i)=>({label,i,c:Number(counts[i]||0)}))
+                           .filter(o=>o.c===max).map(o=>`${o.i}: ${o.label}`);
+    setTxt('winners', winners.length ? winners.join(', ') :
 
-    const body = document.getElementById('resultsBody');
-    body.innerHTML = '';
-    options.forEach((label,i)=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${i}: ${label}</td><td style="text-align:right">${counts[i]??0}</td>`;
-      body.appendChild(tr);
-    });
-    document.getElementById('resultsTable').style.display='table';
-  } catch(e){ console.error('Fetching results failed:', e); }
-}
 
-(async () => {
-  await refreshResultsUI();
-  if (window.ethereum) {
-    window.ethereum.on?.('chainChanged', refreshResultsUI);
-    window.ethereum.on?.('accountsChanged', refreshResultsUI);
-  }
-})();
+
+
 
