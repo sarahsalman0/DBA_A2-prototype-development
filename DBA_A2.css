@@ -1,0 +1,111 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background: #fffbea;
+    color: #3a2c00;     
+  }
+  
+header {
+    padding: 20px;
+    background: #facc15; 
+    text-align: center;
+    color: #3a2c00;
+}
+
+h1 {
+    font-family: "Anton", Impact, "Arial Black", system-ui, sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #F05A28;                 
+    -webkit-text-stroke: 3px #ffffff; 
+    text-shadow:
+      2px 2px 0 rgba(0,0,0,.15),
+      4px 4px 0 rgba(0,0,0,.10);     
+    transform: skew(-10deg);        
+    line-height: 1;
+    font-size: clamp(42px, 7vw, 110px);
+    margin: 0.2rem 0 0.6rem;
+  }
+  
+h2, legend {
+    margin: 0 0 10px;
+    color: #b45309;
+}
+  
+section, fieldset {
+    background: #fff9c2; 
+    border: 2px solid #facc15;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px;
+}
+  
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+  
+input, textarea, select {
+    padding: 8px;
+    border: 1px solid #eab308; 
+    border-radius: 6px;
+    background: #fffbeb;
+    color: #3a2c00;
+}
+  
+  
+button {
+    appearance: none;
+    background: #F05A28;          /* Aperol orange */
+    color: #ffffff;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    padding: 14px 22px;
+    border-radius: 14px;
+    border: 3px solid #ffffff;    /* white edge so it pops on yellow */
+    box-shadow:
+      0 8px 0 #b53e16,            /* hard drop for “pressable” feel */
+      0 12px 24px rgba(0,0,0,.25);
+    transition: transform .08s ease, box-shadow .08s ease, filter .1s;
+}
+  
+button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 10px 0 #b53e16,
+      0 16px 28px rgba(0,0,0,.28);
+    filter: saturate(1.08);
+}
+  
+button:active {
+    transform: translateY(2px);
+    box-shadow:
+      0 4px 0 #8b2f10,
+      0 8px 14px rgba(0,0,0,.25);
+}
+  
+button:focus {
+    outline: none;
+    box-shadow:
+      0 0 0 4px #ffffff,
+      0 0 0 8px #F05A28,
+      0 10px 0 #b53e16,
+      0 16px 28px rgba(0,0,0,.28);
+}
+  
+.val {
+    padding: 4px 8px;
+    background: #fde68a; 
+    border-radius: 6px;
+    font-family: monospace;
+}
+  
+.warn {
+    margin-left: 8px;
+    color: #b91c1c; 
+    font-size: 12px;
+}
+  
