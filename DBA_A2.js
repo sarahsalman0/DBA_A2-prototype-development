@@ -184,30 +184,6 @@ async function getExcluded() {
   }
 }
 
-/*
-async function get_number_of_propsal() {
-  try {
-    return await contract.methods.getOptions().call(); //double check this one 
-  }
-  catch (error) {
-    connectError.innerHTML = error.message;
-    console.log(error);
-    return null;
-  }
-}
-
-async function if_reviewer(userAddress) {
-  try {
-    return await contract.methods.adminViewVoterStatus(userAddress).call(); 
-  }
-  catch (error) {
-    connectError.innerHTML = error.message;
-    console.log(error);
-    return null;
-  }
-}*/
-
-
 //admin actions
 
 async function initialiseSession(topic, options) {
@@ -338,29 +314,35 @@ async function castVote(option) {
   }
 }
 
-//results action
 window.voting = {
   connectWallet,
-  initializeSession,
+  initialiseSession,   
   resetSession,
-  setTopicAndOptions,
   startVoting,
   endVoting,
   revealResults,
   castVote,
   excludeVoter,
   reinstateVoter,
+
+  // getters
   getExcluded,
   viewMyVote,
-  adminViewVoterStatus,
   getTopic,
   getOptions,
-  getStatus,
   getResults,
-  myWallet,
-  myBalanceWei,
-  myNetwork
+  getElectionStatus,
+  getAdmin,
+  getCurrentPhase,
+  hasVoted,
+  getVoters,
+
+  // wallet/network helpers
+  getMyBalance,
+  getBalanceOf,
+  get_current_network
 };
+
 
 window.uiResultsRevealed = window.uiResultsRevealed ?? false;
 
@@ -444,18 +426,39 @@ async function revealAndRefresh(){
   finally{ await updateWarnings(); }
 }
 
-async function fetchAndRenderResults(){
-  try{
+async function fetchAndRenderResults() {
+  try {
     const { phase } = await getPhase();
-    if (phase!=="Reveal") return; 
+    if (phase !== "Reveal") return;
+
     const r = await window.voting.getResults();
     const options = r.optionTexts || r[0] || [];
     const counts  = r.counts      || r[1] || [];
 
-    const max = counts.reduce((m,x)=>Math.max(m,Number(x||0)),0);
-    const winners = options.map((label,i)=>({label,i,c:Number(counts[i]||0)}))
-                           .filter(o=>o.c===max).map(o=>`${o.i}: ${o.label}`);
-    setTxt('winners', winners.length ? winners.join(', ') :
+    // find max votes
+    const max = counts.reduce((m, x) => Math.max(m, Number(x || 0)), 0);
+
+    // find winners
+    const winners = options
+      .map((label, i) => ({ label, i, c: Number(counts[i] || 0) }))
+      .filter(o => o.c === max)
+      .map(o => `${o.i}: ${o.label}`);
+
+    // update winners element
+    setTxt('winners', winners.length ? winners.join(', ') : "No winners");
+
+    // render results table/list
+    const resultsEl = document.getElementById("btnGetResults");
+    if (resultsEl) {
+      resultsEl.innerHTML = options
+        .map((label, i) => `<li>${label}: ${counts[i] || 0} votes</li>`)
+        .join("");
+    }
+  } catch (err) {
+    console.error("Error fetching results:", err);
+  }
+}
+
 
 
 
