@@ -21,8 +21,8 @@
         <h2 id="coordinator">Coordinator</h2>
         <p class="row">
           <button class="primary" onclick="voting.connectWallet()">Connect Wallet</button>
-          <button onclick="voting.myNetwork?.().then(n=>network.textContent=n?.name||'')">Get Network</button>
-          <button onclick="voting.myBalanceWei?.().then(b=>balance.textContent=b)">Get My Balance</button>
+          <button class="primary" onclick="get_current_network().then(n => network.textContent = n)">Get Network</button>
+          <button class="primary" onclick="voting.getMyBalance?.().then(b=>balance.textContent=b)">Get My Balance</button>
         </p>
         <p>My address: <span id="address" class="val">—</span></p>
         <p>My balance: <span id="balance" class="val">—</span></p>

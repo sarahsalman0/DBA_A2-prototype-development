@@ -82,7 +82,7 @@ async function getBalanceOf() {
                     result =  "Classic";
                     break
                     default:
-                    result =  "unknow";
+                    result =  "unknown";
             }
     return result;
 }
