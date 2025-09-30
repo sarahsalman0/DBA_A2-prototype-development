@@ -186,7 +186,35 @@ async function getExcluded() {
 
 //admin actions
 
-async function initialiseSession(topic, options) {
+async function initialiseSession(topic, optionsCsv) {
+  try {
+    const from_address = await connectWallet();
+
+    // turn comma-separated string into array
+    const options = optionsCsv
+      .split(",")
+      .map(o => o.trim())
+      .filter(o => o.length > 0);
+
+    if (!topic || options.length === 0) {
+      alert("Please enter a topic and at least one option.");
+      return;
+    }
+
+    // send transaction to contract
+    const receipt = await contract.methods.initialisedSession(topic, options).send({ from: from_address });
+
+    console.log("Session initialised:", receipt);
+    alert("Session initialised successfully!");
+    return receipt;
+  } catch (error) {
+    console.error("Error initialising session:", error);
+    connectError.innerHTML = error.message;
+    return null;
+  }
+}
+
+/*async function initialiseSession(topic, options) {
 
   try {
   const from_address = await connectWallet();
@@ -200,8 +228,7 @@ async function initialiseSession(topic, options) {
     console.log(error);
     return null;
   }
-}
-
+}*/
 
 async function startVoting() {
 

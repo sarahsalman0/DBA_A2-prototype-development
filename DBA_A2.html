@@ -29,22 +29,6 @@
         <p>Network: <span id="network" class="val">—</span></p>
     </section>
 
-    <section aria-labelledby="status-h">
-        <h2 id="status-h">Status</h2>
-        <p class="row">
-          <button onclick="voting.getStatus().then(s=>{roundId.textContent=s._roundId;phaseName.textContent=s.phaseName;flagSession.textContent=s._sessionInitialised;flagOpen.textContent=s._electionOpened;flagClosed.textContent=s._electionClosed;})">Refresh</button>
-          <button onclick="voting.getTopic().then(x=>statusTopic.textContent=x)">Get Topic</button>
-          <button onclick="voting.getOptions().then(xs=>statusOptions.textContent=xs.join(', '))">Get Options</button>
-        </p>
-        <p>Round: <span id="roundId" class="val">—</span></p>
-        <p>Phase: <span id="phaseName" class="val">—</span></p>
-        <p>Session initialised: <span id="flagSession" class="val">—</span></p>
-        <p>Election opened: <span id="flagOpen" class="val">—</span></p>
-        <p>Election closed: <span id="flagClosed" class="val">—</span></p>
-        <p>Topic: <span id="statusTopic" class="val">—</span></p>
-        <p>Options: <span id="statusOptions" class="val">—</span></p>
-    </section>
-
     <section aria-labelledby="admin-h">
         <h2 id="admin-h">Coordinator Section</h2>
     
@@ -55,7 +39,7 @@
           <label for="optionsCsv">Options</label>
           <textarea id="optionsCsv" placeholder="KFC, Gongcha, Grill'd"></textarea>
           <p class="row">
-            <button onclick="(async()=>{await voting.initializeSession(topic.value,optionsCsv.value)})()">Initialize Session</button>
+            <button onclick="(async()=>{await voting.initialiseSession(topic.value,optionsCsv.value)})()">Initialise Session</button>
             <button onclick="(async()=>{await voting.setTopicAndOptions(topic.value,optionsCsv.value)})()">Set Topic & Options</button>
             <button onclick="(async()=>{await voting.resetSession(topic.value,optionsCsv.value)})()">Reset Session</button>
           </p>
@@ -96,6 +80,23 @@
           </fieldset>
     </section>
     
+    <section aria-labelledby="status-h">
+      <h2 id="status-h">Status</h2>
+      <p class="row">
+        <button onclick="voting.getStatus().then(s=>{roundId.textContent=s._roundId;phaseName.textContent=s.phaseName;flagSession.textContent=s._sessionInitialised;flagOpen.textContent=s._electionOpened;flagClosed.textContent=s._electionClosed;})">Refresh</button>
+        <button onclick="voting.getTopic().then(x=>statusTopic.textContent=x)">Get Topic</button>
+        <button onclick="voting.getOptions().then(xs=>statusOptions.textContent=xs.join(', '))">Get Options</button>
+      </p>
+      <p>Round: <span id="roundId" class="val">—</span></p>
+      <p>Phase: <span id="phaseName" class="val">—</span></p>
+      <p>Session initialised: <span id="flagSession" class="val">—</span></p>
+      <p>Election opened: <span id="flagOpen" class="val">—</span></p>
+      <p>Election closed: <span id="flagClosed" class="val">—</span></p>
+      <p>Topic: <span id="statusTopic" class="val">—</span></p>
+      <p>Options: <span id="statusOptions" class="val">—</span></p>
+  </section>
+
+
     <section aria-labelledby="participant-h">
         <h2 id="participant-h">Participant Section</h2>
     
