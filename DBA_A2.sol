@@ -132,14 +132,14 @@ contract votingApp {
     }
 
     // Must be completed for the first time to initalise a session
-    function initialisedSession(string calldata _topic, string[] calldata _options) external onlyAdmin notInitialised startedElection {
+    function initialisedSession(string calldata _topic, string[] calldata _options) external onlyAdmin notInitialised startedElection { //initialise session not working rn trying to fix :/
         // New round with topic and options can be set up for every round
         settingElection(_topic, _options);
         // Initalise for the platform
         sessionInitialised = true;
     }
 
-    // Reset the session to a clean and new round
+    /* Reset the session to a clean and new round
     function resetSession(string calldata _topic, string[] calldata _options) external onlyAdmin {
         //Must keep the roundID from the previous to continue counting
         uint256 oldId = roundId;
@@ -149,7 +149,32 @@ contract votingApp {
         sessionInitialised = true;
         // Sends the new round to the webpage to change interface
         emit ProposalReset(oldId, roundId);
-    }
+    } */
+
+    //Reset the session to a clean and new round
+    function resetSession() external onlyAdmin {
+
+    //Must keep the roundID from the previous to continue counting
+    uint256 oldId = roundId;
+
+    // wipe topic
+    topic = "";
+
+    // wipe array
+    delete options;  
+
+    // reset other flags
+    sessionInitialised = false;
+    electionOpened = false;
+    electionClosed = false;
+
+    // increment roundId for next session
+    roundId++;
+
+    // Sends the new round to the webpage to change interface
+    emit ProposalReset(oldId, roundId);
+}
+
     
     // Creating a new round for each session
     function settingElection(string calldata _topic, string[] calldata _options) internal {

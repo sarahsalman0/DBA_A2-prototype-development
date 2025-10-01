@@ -191,10 +191,7 @@ async function initialiseSession(topic, optionsCsv) {
     const from_address = await connectWallet();
 
     // turn comma-separated string into array
-    const options = optionsCsv
-      .split(",")
-      .map(o => o.trim())
-      .filter(o => o.length > 0);
+    const options = optionsCsv.split(",").map(o => o.trim()).filter(o => o.length > 0);
 
     if (!topic || options.length === 0) {
       alert("Please enter a topic and at least one option.");
@@ -209,26 +206,10 @@ async function initialiseSession(topic, optionsCsv) {
     return receipt;
   } catch (error) {
     console.error("Error initialising session:", error);
-    connectError.innerHTML = error.message;
+    //connectError.innerHTML = error.message;
     return null;
   }
 }
-
-/*async function initialiseSession(topic, options) {
-
-  try {
-  const from_address = await connectWallet();
-  await contract.methods.initialisedSession(topic, options).call({ from: from_address });
-  const receipt = await contract.methods.initialisedSession(topic, options).send({from: from_address});
-  console.log(receipt);
-  return receipt;
-  }
-  catch (error) {
-    connectError.innerHTML = error.message;
-    console.log(error);
-    return null;
-  }
-}*/
 
 async function startVoting() {
 
@@ -280,19 +261,21 @@ async function revealResults() {
 }
 
 
-async function resetSession(topic, options) {
+async function resetSession() {
   try {
     const from_address = await connectWallet();
-    await contract.methods.resetSession().call({ from: from_address });
-    const receipt = await contract.methods.resetSession().send({from: from_address});
-    console.log("Session reset:",receipt);
+    //await contract.methods.resetSession().call({ from: from_address });
+    const receipt = await contract.methods.resetSession().send({ from: from_address });
+
+    console.log("Session reset:", receipt);
+    alert("Session reset successfully!");
     return receipt;
-    }
-    catch (error) {
-      connectError.innerHTML = error.message;
-      console.log(error);
-      return null;
-    }
+
+  } catch (error) {
+    console.error("Error resetting session:", error);
+    if (connectError) connectError.innerHTML = error.message;
+    return null;
+  }
 }
 
 

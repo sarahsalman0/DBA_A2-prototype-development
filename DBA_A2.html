@@ -40,8 +40,8 @@
           <textarea id="optionsCsv" placeholder="KFC, Gongcha, Grill'd"></textarea>
           <p class="row">
             <button onclick="(async()=>{await voting.initialiseSession(topic.value,optionsCsv.value)})()">Initialise Session</button>
-            <button onclick="(async()=>{await voting.setTopicAndOptions(topic.value,optionsCsv.value)})()">Set Topic & Options</button>
-            <button onclick="(async()=>{await voting.resetSession(topic.value,optionsCsv.value)})()">Reset Session</button>
+            <!--<button onclick="(async()=>{await voting.setTopicAndOptions(topic.value,optionsCsv.value)})()">Set Topic & Options</button>-->
+            <button onclick="(async()=>{await voting.resetSession()})()">Reset Session</button>
           </p>
           <p class="row">
             <button onclick="voting.getTopic().then(x=>currentTopic.textContent=x)">Get Topic</button>
