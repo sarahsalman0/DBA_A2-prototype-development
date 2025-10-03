@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-    <script src="DBA_A2.js"></script>
+    <script type="module" src="DBA_A2.js"></script>
     <title>Smart Contract Voting</title>
     <link rel="stylesheet" href="DBA_A2.css">
     <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
@@ -111,7 +111,8 @@
             <button onclick="voting.castVote(parseInt(voteSelect.value,10))">Cast Vote</button>
           </p>
           <p class="row">
-            <button onclick="voting.viewMyVote().then(v=>{myVote.textContent = v.voted ? `${v.optionIndex}: ${v.optionText}` : 'Not voted'; updateWarnings();})">View My Vote</button>
+            <!--<button onclick="voting.getMyVotingStatus().then(v=>{myVote.textContent = v.voted ? `${v.optionIndex}: ${v.optionText}` : 'Not voted'; updateWarnings();})">View My Vote</button>-->
+            <button onclick="voting.viewMyVote().then(v => {const voted = v.voted ?? v[0]; const optionIndex = v.optionIndex ?? v[1]; const optionText  = v.optionText ?? v[2]; myVote.textContent = voted ? `${optionIndex}: ${optionText}`: 'Not voted'; updateWarnings();});">View My Vote</button>
             <span id="warnView" class="warn"></span>
           </p>
         </fieldset>

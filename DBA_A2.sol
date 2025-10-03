@@ -15,6 +15,7 @@ contract votingApp {
     //Phase for the voting platform
     //Adds for each new round
     uint256 public roundId; 
+    
     enum Phase { 
         Nothing, Setup, Voting, Results 
     }
@@ -132,38 +133,34 @@ contract votingApp {
     }
 
     // Must be completed for the first time to initalise a session
-    function initialisedSession(string calldata _topic, string[] calldata _options) external onlyAdmin notInitialised startedElection { //initialise session not working rn trying to fix :/
+    function initialisedSession(string calldata _topic, string[] calldata _options) external onlyAdmin notInitialised startedElection { 
         // New round with topic and options can be set up for every round
         settingElection(_topic, _options);
         // Initalise for the platform
         sessionInitialised = true;
     }
 
-    /* Reset the session to a clean and new round
-    function resetSession(string calldata _topic, string[] calldata _options) external onlyAdmin {
-        //Must keep the roundID from the previous to continue counting
-        uint256 oldId = roundId;
-        // Recreate a new round and set the phase Setup
-        settingElection(_topic, _options);
-        // Makes the session be initalised
-        sessionInitialised = true;
-        // Sends the new round to the webpage to change interface
-        emit ProposalReset(oldId, roundId);
-    } */
 
-    //Reset the session to a clean and new round
+    // Reset the session to a clean and new round
     function resetSession() external onlyAdmin {
-
-    //Must keep the roundID from the previous to continue counting
     uint256 oldId = roundId;
 
+    // get current round storage reference
+    Round storage r = rounds[roundId];
+
     // wipe topic
-    topic = "";
+    r.topic = "";
 
     // wipe array
-    delete options;  
+    delete r.options;
+    delete r.excludedList;
+    delete r.voters;
 
-    // reset other flags
+    // reset mappings (cannot delete mappings directly, but can ignore old values,
+    // since a new roundId will be used for the new session)
+    // e.g. r.hasVoted[...] will never be checked again once roundId increments.
+
+    // reset flags
     sessionInitialised = false;
     electionOpened = false;
     electionClosed = false;
@@ -171,11 +168,11 @@ contract votingApp {
     // increment roundId for next session
     roundId++;
 
-    // Sends the new round to the webpage to change interface
+    // emit event
     emit ProposalReset(oldId, roundId);
 }
 
-    
+
     // Creating a new round for each session
     function settingElection(string calldata _topic, string[] calldata _options) internal {
         // Makes sure that there is two options to have a voting platform
@@ -427,3 +424,4 @@ contract votingApp {
     }
 
 }
+
