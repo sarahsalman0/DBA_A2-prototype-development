@@ -1,5 +1,5 @@
 const web3 = new Web3(window.ethereum);
-const contract_address = '0xfB7086A8a545603Cb563a8D93FAa4f3342F18DE9'; 
+const contract_address = '0x57B57241e32Ba9bEA7799f7e13C4b4c77B16fB7f'; 
 const abi = [
 	{
 		"inputs": [],
@@ -827,13 +827,14 @@ async function initialiseSession(topic, optionsCsv) {
 
     // send transaction to contract
     const receipt = await contract.methods.initialisedSession(topic, options).send({ from: from_address });
+    setWarn("warnStart", "Session initialised", "green");
 
     console.log("Session initialised:", receipt);
     alert("Session initialised successfully!");
     return receipt;
   } catch (error) {
     console.error("Error initialising session:", error);
-    //connectError.innerHTML = error.message;
+    setWarn("warnStart", "Failed to initialise session", "red");
     return null;
   }
 }
@@ -844,12 +845,14 @@ async function startVoting() {
     const from_address = await connectWallet();
     await contract.methods.startVoting().call({ from: from_address });
     const receipt = await contract.methods.startVoting().send({from: from_address});
+    setWarn("warnStart", "Voting started", "green");
     console.log("Voting started:",receipt);
     alert("voting has started!");
     return receipt;
     }
     catch (error) {
       connectError.innerHTML = error.message;
+      setWarn("warnStart", "Failed to start voting", "red");
       console.log(error);
       return null;
     }
@@ -862,12 +865,15 @@ async function endVoting() {
     const from_address = await connectWallet();
     await contract.methods.endingElection().call({ from: from_address });
     const receipt = await contract.methods.endingElection().send({from: from_address});
+    setWarn("warnEnd", "Voting ended", "green");
     console.log("Voting ended:", receipt);
+    alert("voting has ended!");
     return receipt;
     }
     catch (error) {
       connectError.innerHTML = error.message;
       console.log(error);
+      setWarn("warnEnd", "Failed to end voting", "red");
       return null;
     }
 }
@@ -894,6 +900,7 @@ async function resetSession() {
     const from_address = await connectWallet();
     //await contract.methods.resetSession().call({ from: from_address });
     const receipt = await contract.methods.resetSession().send({ from: from_address });
+    setWarn("warnStart", "Session reset", "green");
 
     console.log("Session reset:", receipt);
     alert("Session reset successfully!");
@@ -901,6 +908,7 @@ async function resetSession() {
 
   } catch (error) {
     console.error("Error resetting session:", error);
+    setWarn("warnStart", "Failed to reset session", "red");
     if (connectError) connectError.innerHTML = error.message;
     return null;
   }
@@ -910,7 +918,7 @@ async function resetSession() {
 async function excludeVoter(addr) {
   try {
     const from_address = await connectWallet();
-    await contract.methods.excludeVoter().call({ from: from_address});
+    await contract.methods.excludeVoter(addr).call({ from: from_address});
     const receipt = await contract.methods.excludeVoter(addr).send({ from: from_address });
     console.log("Voter excluded:", receipt);
     return receipt;

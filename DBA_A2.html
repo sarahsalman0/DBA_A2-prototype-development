@@ -61,9 +61,6 @@
 
               <button onclick="voting.endVoting()">End Voting</button>
               <span id="warnEnd" class="warn"></span>
-
-              <button id="btnReveal" onclick="revealAndRefresh()">Reveal Results (Admin)</button>
-              <span id="warnReveal" class="warn"></span>
             </p>
         </fieldset>
 
@@ -83,7 +80,7 @@
     <section aria-labelledby="status-h">
       <h2 id="status-h">Status</h2>
       <p class="row">
-        <button onclick="voting.getStatus().then(s=>{roundId.textContent=s._roundId;phaseName.textContent=s.phaseName;flagSession.textContent=s._sessionInitialised;flagOpen.textContent=s._electionOpened;flagClosed.textContent=s._electionClosed;})">Refresh</button>
+        <button onclick="voting.getElectionStatus().then(s=>{roundId.textContent=s._roundId;phaseName.textContent=s.phaseName;flagSession.textContent=s._sessionInitialised;flagOpen.textContent=s._electionOpened;flagClosed.textContent=s._electionClosed;})">Refresh</button>
         <button onclick="voting.getTopic().then(x=>statusTopic.textContent=x)">Get Topic</button>
         <button onclick="voting.getOptions().then(xs=>statusOptions.textContent=xs.join(', '))">Get Options</button>
       </p>
@@ -112,35 +109,36 @@
           </p>
           <p class="row">
             <!--<button onclick="voting.getMyVotingStatus().then(v=>{myVote.textContent = v.voted ? `${v.optionIndex}: ${v.optionText}` : 'Not voted'; updateWarnings();})">View My Vote</button>-->
-            <button onclick="voting.viewMyVote().then(v => {const voted = v.voted ?? v[0]; const optionIndex = v.optionIndex ?? v[1]; const optionText  = v.optionText ?? v[2]; myVote.textContent = voted ? `${optionIndex}: ${optionText}`: 'Not voted'; updateWarnings();});">View My Vote</button>
+            <button onclick="voting.getMyVotingStatus()
+            .then(v => {const voted = v.voted ?? v[0]; const optionIndex = v.optionIndex ?? v[1]; const optionText  = v.optionText ?? v[2];
+             myVote.textContent = voted ? `${optionIndex}: ${optionText}`:
+            'Not voted'; updateWarnings();});">View My Vote
+            </button>
             <span id="warnView" class="warn"></span>
+            <p>My vote: <span id="myVote" class="val">—</span></p>
+
           </p>
         </fieldset>
+    </section>
    
     <section aria-labelledby="results-h">
-        <h2 id="results-h">Results</h2>
-          
-        <p id="resultsLockMsg" class="row">
-            Results are hidden until the coordinator reveals them after voting ends.
-        </p>
-          
-        <p class="row">
-            <button id="btnReveal" onclick="revealAndRefresh()">Reveal Results (Admin)</button>
-            <p id="resultsLockMsg" class="row">Results are hidden until the coordinator reveals them after voting ends.</p>
-            <button id="btnGetResults" onclick="fetchAndRenderResults()">Get Results</button>
-            <span id="warnGetResults" class="warn"></span>
-            
-            <p>Winning option(s): <span id="winners" class="val">—</span></p>
-                <table id="resultsTable" style="border-collapse:collapse;display:none">
-                    <thead>
-                    <tr>
-                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #ccc;">Option</th>
-                    <th style="text-align:right;padding:6px 8px;border-bottom:1px solid #ccc;">Votes</th>
-                    </tr>
-                    </thead>
-                <tbody id="resultsBody"></tbody>
-                </table>
-    </section>
+      <h2 id="results-h">Results</h2>
+      <p id="resultsMsg" class="row">Results are hidden until the coordinator reveals them after voting ends.</p>
+      <p class="row">
+        <button id="btnRevealResults" onclick="voting.revealResults()">Reveal Results (Admin)</button>
+        <button id="btnGetResults" onclick="voting.getResults()">Get Results</button>
+        <span id="warnGetResults" class="warn"></span>
+      </p>
+      <p>Winning option(s): <span id="winners" class="val">—</span></p>
+      <table id="resultsTable" style="border-collapse:collapse;display:none">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #ccc;">Option</th>
+            <th style="text-align:right;padding:6px 8px;border-bottom:1px solid #ccc;">Votes</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
     </section>
 
 </body>
